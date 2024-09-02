@@ -1,29 +1,38 @@
 import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, StyleSheet, Text, View, PermissionsAndroid, Platform, Alert } from 'react-native';
+import { ActivityIndicator, StyleSheet, Text, View, PermissionsAndroid, Platform, Alert, FlatList } from 'react-native';
 import GetLocation from 'react-native-get-location';
+import Forecast from '../components/Forecast';
 
 const api = `api`
 const BASE_URL = `https://${api}.openweathermap.org/data/2.5/`;
 // const OPEN_WEATHER_KEY = process.env.OPEN_WEATHER_KEY;
 const OPEN_WEATHER_KEY = `4665dfc8b15c84ec4910a9138fa49893`;
 
+type MainWeather = {
+  temp: number;
+  feels_like: number;
+  temp_min: number;
+  temp_max: number;
+  pressure: number;
+  humidity: number;
+  sea_level: number;
+  grnd_level: number;
+}
+
 type Weather = {
   name: string;
-  main: {
-    temp: number;
-    feels_like: number;
-    temp_min: number;
-    temp_max: number;
-    pressure: number;
-    humidity: number;
-    sea_level: number;
-    grnd_level: number;
-  };
+  main: MainWeather;
 };
+
+export type WeatherForecast = {
+  main:MainWeather;
+  dt : number;
+}
 
 const Weather = () => {
   const [weather, setWeather] = useState(null);
-  const [location, setLocation] = useState(null);
+  const [location, setLocation] = useState<Weather>(null);
+  const [forecast,setForecast] = useState<WeatherForecast[]>(null);
 
   useEffect(() => {
     const requestLocationPermission = async () => {
@@ -41,6 +50,7 @@ const Weather = () => {
           );
           if (granted === PermissionsAndroid.RESULTS.GRANTED) {
             fetchLocation();
+            fetchForecast(location);
           } else {
             Alert.alert('Permission Denied', 'Location permission is required to fetch weather data.');
           }
@@ -49,6 +59,7 @@ const Weather = () => {
         }
       } else {
         fetchLocation();
+        fetchForecast(location);
       }
     };
 
@@ -77,7 +88,7 @@ const Weather = () => {
 
     const { latitude, longitude } = location;
     try {
-      const res = await fetch(`${BASE_URL}weather?lat=${latitude}&lon=${longitude}&appid=${OPEN_WEATHER_KEY}&metric=units`);
+      const res = await fetch(`${BASE_URL}weather?lat=${latitude}&lon=${longitude}&appid=${OPEN_WEATHER_KEY}&units=metric`);
       const data = await res.json();
       setWeather(data);
     } catch (error) {
@@ -85,6 +96,19 @@ const Weather = () => {
     }
   };
 
+  const fetchForecast = async(location) => {
+    if(!location) return;
+
+    const {latitude,longitude} = location;
+    try{
+      const res = await fetch(`${BASE_URL}forecast?lat=${latitude}&lon=${longitude}&appid=${OPEN_WEATHER_KEY}&units=metric`);
+      const data = await res.json();
+      setForecast(data.list);
+      // console.log(forecast);
+    } catch (error) {
+      Alert.alert('Error fetching weather data:', error);
+    }
+  }
 
   if (!weather) {
     return <ActivityIndicator />;
@@ -92,11 +116,18 @@ const Weather = () => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.location}>{weather.name}</Text>
-      <Text style={styles.temp}>{Math.round(weather.coord.lon)}°C</Text>
-      <Text >{weather.coord.lon}°C</Text>
-      <Text >{weather.coord.lat}°C</Text>
-
+      <View style={{flex:1,alignItems:"center",justifyContent:"center"}}>
+        <Text style={styles.location}>{weather.name}</Text>
+        <Text style={styles.temp}>{Math.round(weather.main.temp)}°C</Text>
+      </View>
+      <FlatList 
+        style={styles.flatlistStyle}
+        showsVerticalScrollIndicator={true}
+        data={forecast} horizontal contentContainerStyle={{gap:10,}}
+        renderItem={({ item }) => (
+         <Forecast forecast={item} />
+        )}
+      />
     </View>
   );
 };
@@ -120,6 +151,12 @@ const styles = StyleSheet.create({
     fontSize: 100,
     fontWeight: 'bold',
     color: 'gray',
+  },
+  flatlistStyle:{
+    backgroundColor:'#fff',
+    flexGrow:0,
+    height:200,
+    margin:10,
   },
 });
 
