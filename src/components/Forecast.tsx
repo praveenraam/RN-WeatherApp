@@ -7,7 +7,7 @@ const Forecast = ({forecast}: {forecast:WeatherForecast} ) => {
   return (
     <View style={styles.container}>
       <Text style={styles.temp}>{Math.floor(forecast.main.temp)}°C</Text>
-      <Text style={styles.date}>{dayjs.unix(forecast.dt).format('HH h a')}</Text>
+      <Text style={styles.date}>{dayjs.unix(forecast.dt).format('d/MM h a')}</Text>
     </View>
   )
 }

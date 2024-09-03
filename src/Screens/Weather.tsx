@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, StyleSheet, Text, View, PermissionsAndroid, Platform, Alert, FlatList } from 'react-native';
+import { ActivityIndicator, StyleSheet, Text, View, PermissionsAndroid, Platform, Alert, FlatList,ImageBackground, Image } from 'react-native';
 import GetLocation from 'react-native-get-location';
 import Forecast from '../components/Forecast';
 
@@ -7,6 +7,7 @@ const api = `api`
 const BASE_URL = `https://${api}.openweathermap.org/data/2.5/`;
 // const OPEN_WEATHER_KEY = process.env.OPEN_WEATHER_KEY;
 const OPEN_WEATHER_KEY = `4665dfc8b15c84ec4910a9138fa49893`;
+const IMAGE = 'https://i0.wp.com/picjumbo.com/wp-content/uploads/beautiful-colors-of-mountains-after-sunset-free-image.jpeg?w=2210&quality=70'
 
 type MainWeather = {
   temp: number;
@@ -115,7 +116,9 @@ const Weather = () => {
   }
 
   return (
-    <View style={styles.container}>
+    <ImageBackground source={{uri: IMAGE}} style={styles.container}>
+
+      <View style={{...StyleSheet.absoluteFillObject,backgroundColor:'rgba(0,0,0,0.5)'}} />
       <View style={{flex:1,alignItems:"center",justifyContent:"center"}}>
         <Text style={styles.location}>{weather.name}</Text>
         <Text style={styles.temp}>{Math.round(weather.main.temp)}°C</Text>
@@ -128,7 +131,7 @@ const Weather = () => {
          <Forecast forecast={item} />
         )}
       />
-    </View>
+    </ImageBackground>
   );
 };
 
@@ -150,10 +153,9 @@ const styles = StyleSheet.create({
     fontFamily:'InterBlack',
     fontSize: 100,
     fontWeight: 'bold',
-    color: 'gray',
+    color: 'lightgray',
   },
   flatlistStyle:{
-    backgroundColor:'#fff',
     flexGrow:0,
     height:200,
     margin:10,
